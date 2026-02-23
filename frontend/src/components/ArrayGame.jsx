@@ -3,28 +3,45 @@ import { useState } from "react";
 function ArrayGame() {
   const [array, setArray] = useState([5, 2, 9, 1]);
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [message, setMessage] = useState("");
 
   function handleClick(index) {
-    // If nothing selected → select first box
     if (selectedIndex === null) {
       setSelectedIndex(index);
-    } 
-    // If clicking same box → deselect
-    else if (selectedIndex === index) {
-      setSelectedIndex(null);
-    } 
-    // If another box clicked → swap
-    else {
-      const newArray = [...array];
+      setMessage("");
+      return;
+    }
 
-      // swap values
-      const temp = newArray[selectedIndex];
-      newArray[selectedIndex] = newArray[index];
-      newArray[index] = temp;
+    // If same box clicked → deselect
+    if (selectedIndex === index) {
+      setSelectedIndex(null);
+      return;
+    }
+
+    // Check adjacency
+    if (Math.abs(selectedIndex - index) !== 1) {
+      setMessage("❌ You can only swap adjacent elements!");
+      setSelectedIndex(null);
+      return;
+    }
+
+    const leftIndex = Math.min(selectedIndex, index);
+    const rightIndex = Math.max(selectedIndex, index);
+
+    // Bubble sort condition
+    if (array[leftIndex] > array[rightIndex]) {
+      const newArray = [...array];
+      const temp = newArray[leftIndex];
+      newArray[leftIndex] = newArray[rightIndex];
+      newArray[rightIndex] = temp;
 
       setArray(newArray);
-      setSelectedIndex(null);
+      setMessage("✅ Correct swap!");
+    } else {
+      setMessage("❌ Wrong move! Left element is already smaller.");
     }
+
+    setSelectedIndex(null);
   }
 
   return (
@@ -55,6 +72,8 @@ function ArrayGame() {
           </div>
         ))}
       </div>
+
+      <p style={{ marginTop: "20px", fontWeight: "bold" }}>{message}</p>
     </div>
   );
 }
