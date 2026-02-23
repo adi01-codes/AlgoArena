@@ -1,118 +1,120 @@
 import { useState } from "react";
 
 function ArrayGame() {
-  const [array, setArray] = useState([5, 2, 9, 1]);
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const [message, setMessage] = useState("");
-  const [pass, setPass] = useState(0);
+  const initialArray = [5, 2, 9, 1];
 
-  const n = array.length;
+  const [array, setArray] = useState(initialArray);
+  const [tempSlot, setTempSlot] = useState(null);
+  const [dragSource, setDragSource] = useState(null);
 
-  function handleClick(index) {
-    // Block clicks on sorted (locked) elements
-    if (index >= n - pass) {
-      setMessage("🔒 This element is already sorted");
-      return;
-    }
-
-    if (selectedIndex === null) {
-      setSelectedIndex(index);
-      setMessage("");
-      return;
-    }
-
-    if (selectedIndex === index) {
-      setSelectedIndex(null);
-      return;
-    }
-
-    // Must be adjacent
-    if (Math.abs(selectedIndex - index) !== 1) {
-      setMessage("❌ Only adjacent swaps allowed");
-      setSelectedIndex(null);
-      return;
-    }
-
-    const left = Math.min(selectedIndex, index);
-    const right = Math.max(selectedIndex, index);
-
-    if (array[left] > array[right]) {
-      const newArray = [...array];
-      [newArray[left], newArray[right]] = [
-        newArray[right],
-        newArray[left],
-      ];
-
-      setArray(newArray);
-      setMessage("✅ Correct swap");
-    } else {
-      setMessage("❌ Wrong bubble step");
-    }
-
-    setSelectedIndex(null);
+  function handleDragStart(source) {
+    setDragSource(source);
   }
 
-  function nextPass() {
-    setPass(pass + 1);
-    setSelectedIndex(null);
-    setMessage(`➡️ Pass ${pass + 1} completed`);
+  function handleDragOver(e) {
+    e.preventDefault(); // REQUIRED to allow drop
   }
 
-  const isSorted = pass === n - 1;
+  function handleDrop(target) {
+    if (!dragSource) return;
+
+    const newArray = [...array];
+    let newTemp = tempSlot;
+
+    // Dragging from array
+    if (dragSource.type === "array") {
+      const value = array[dragSource.index];
+
+      if (target.type === "temp") {
+        if (tempSlot !== null) return; // temp already full
+
+        newTemp = value;
+        newArray[dragSource.index] = null;
+      }
+
+      if (target.type === "array") {
+        if (array[target.index] !== null) return;
+
+        newArray[target.index] = value;
+        newArray[dragSource.index] = null;
+      }
+    }
+
+    // Dragging from temp
+    if (dragSource.type === "temp") {
+      if (target.type === "array" && array[target.index] === null) {
+        newArray[target.index] = tempSlot;
+        newTemp = null;
+      }
+    }
+
+    setArray(newArray);
+    setTempSlot(newTemp);
+    setDragSource(null);
+  }
 
   return (
     <div>
-      <h2>Bubble Sort Simulator</h2>
-      <p>Pass: {pass}</p>
+      <h2>Bubble Sort Level</h2>
 
-      <div style={{ display: "flex", gap: "15px", marginTop: "20px" }}>
-        {array.map((num, index) => {
-          const locked = index >= n - pass;
-
-          return (
-            <div
-              key={index}
-              onClick={() => handleClick(index)}
-              style={{
-                width: "60px",
-                height: "60px",
-                backgroundColor: locked
-                  ? "#9E9E9E"
-                  : selectedIndex === index
-                  ? "#FF9800"
-                  : "#4CAF50",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                color: "white",
-                fontWeight: "bold",
-                borderRadius: "8px",
-                fontSize: "20px",
-                cursor: locked ? "not-allowed" : "pointer",
-              }}
-            >
-              {num}
-            </div>
-          );
-        })}
+      {/* Array */}
+      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+        {array.map((num, index) => (
+          <div
+            key={index}
+            draggable={num !== null}
+            onDragStart={() =>
+              handleDragStart({ type: "array", index })
+            }
+            onDragOver={handleDragOver}
+            onDrop={() =>
+              handleDrop({ type: "array", index })
+            }
+            style={{
+              width: "70px",
+              height: "70px",
+              border: "2px solid black",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: "22px",
+              backgroundColor: num === null ? "#f5f5f5" : "#4CAF50",
+              color: "white",
+              cursor: num !== null ? "grab" : "default",
+            }}
+          >
+            {num}
+          </div>
+        ))}
       </div>
 
-      <p style={{ marginTop: "15px", fontWeight: "bold" }}>{message}</p>
-
-      {!isSorted && (
-        <button
-          onClick={nextPass}
-          style={{ marginTop: "20px", padding: "10px 20px" }}
+      {/* Temp Slot */}
+      <div style={{ marginTop: "40px" }}>
+        <h3>Temp Slot</h3>
+        <div
+          draggable={tempSlot !== null}
+          onDragStart={() =>
+            handleDragStart({ type: "temp" })
+          }
+          onDragOver={handleDragOver}
+          onDrop={() =>
+            handleDrop({ type: "temp" })
+          }
+          style={{
+            width: "70px",
+            height: "70px",
+            border: "2px dashed black",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: "22px",
+            backgroundColor: "#eee",
+            cursor: tempSlot !== null ? "grab" : "default",
+          }}
         >
-          Next Pass →
-        </button>
-      )}
-
-      {isSorted && (
-        <h3 style={{ color: "green", marginTop: "20px" }}>
-          🎉 Array Sorted Successfully!
-        </h3>
-      )}
+          {tempSlot}
+        </div>
+      </div>
     </div>
   );
 }
