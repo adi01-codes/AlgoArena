@@ -12,13 +12,11 @@ function ArrayGame() {
   // TIMER
   useEffect(() => {
     let interval;
-
     if (isRunning) {
       interval = setInterval(() => {
         setTime((prev) => prev + 1);
       }, 1000);
     }
-
     return () => clearInterval(interval);
   }, [isRunning]);
 
@@ -36,24 +34,22 @@ function ArrayGame() {
     const newArray = [...array];
     let newTemp = tempSlot;
 
-    // Dragging from array
+    // From array
     if (dragSource.type === "array") {
       const value = array[dragSource.index];
 
-      if (target.type === "temp") {
-        if (tempSlot !== null) return;
+      if (target.type === "temp" && tempSlot === null) {
         newTemp = value;
         newArray[dragSource.index] = null;
       }
 
-      if (target.type === "array") {
-        if (array[target.index] !== null) return;
+      if (target.type === "array" && array[target.index] === null) {
         newArray[target.index] = value;
         newArray[dragSource.index] = null;
       }
     }
 
-    // Dragging from temp
+    // From temp
     if (dragSource.type === "temp") {
       if (target.type === "array" && array[target.index] === null) {
         newArray[target.index] = tempSlot;
@@ -73,7 +69,6 @@ function ArrayGame() {
       if (arr[i] === null || arr[i + 1] === null) return;
       if (arr[i] > arr[i + 1]) return;
     }
-
     setIsRunning(false);
   }
 
@@ -95,14 +90,15 @@ function ArrayGame() {
     <div
       style={{
         height: "100vh",
+        backgroundColor: "#1e1e1e",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        backgroundColor: "#f4f6f8",
         fontFamily: "Arial, sans-serif",
+        color: "white",
       }}
     >
-      {/* Top Bar */}
+      {/* Top Left Controls */}
       <div
         style={{
           position: "absolute",
@@ -113,12 +109,7 @@ function ArrayGame() {
           alignItems: "center",
         }}
       >
-        <div
-          style={{
-            fontSize: "18px",
-            fontWeight: "bold",
-          }}
-        >
+        <div style={{ fontSize: "18px", fontWeight: "bold" }}>
           ⏱ {formatTime(time)}
         </div>
 
@@ -128,7 +119,7 @@ function ArrayGame() {
             padding: "8px 16px",
             borderRadius: "6px",
             border: "none",
-            backgroundColor: "#ff5252",
+            backgroundColor: "#2e7d32",
             color: "white",
             cursor: "pointer",
           }}
@@ -137,7 +128,7 @@ function ArrayGame() {
         </button>
       </div>
 
-      {/* Game Container */}
+      {/* Game Area */}
       <div
         style={{
           marginTop: "120px",
@@ -146,9 +137,9 @@ function ArrayGame() {
           alignItems: "center",
         }}
       >
-        <h2 style={{ marginBottom: "30px" }}>Bubble Sort Level</h2>
+        <h2 style={{ marginBottom: "40px" }}>Bubble Sort Level</h2>
 
-        {/* Main Array */}
+        {/* Array */}
         <div style={{ display: "flex", gap: "15px" }}>
           {array.map((num, index) => (
             <div
@@ -164,17 +155,15 @@ function ArrayGame() {
               style={{
                 width: "80px",
                 height: "80px",
-                borderRadius: "12px",
-                backgroundColor: num === null ? "#ddd" : "#1976d2",
+                borderRadius: "10px",
+                backgroundColor: num === null ? "#333" : "#4CAF50",
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 fontSize: "24px",
                 fontWeight: "bold",
                 color: "white",
-                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
                 cursor: num !== null ? "grab" : "default",
-                transition: "0.2s",
               }}
             >
               {num}
@@ -185,15 +174,13 @@ function ArrayGame() {
         {/* Temp Slot */}
         <div
           style={{
-            marginTop: "60px",
+            marginTop: "70px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
           }}
         >
-          <span style={{ marginBottom: "10px", fontWeight: "bold" }}>
-            Temp Slot
-          </span>
+          <span style={{ marginBottom: "10px" }}>Temp Slot</span>
 
           <div
             draggable={tempSlot !== null}
@@ -207,15 +194,16 @@ function ArrayGame() {
             style={{
               width: "90px",
               height: "90px",
-              borderRadius: "16px",
-              border: "3px dashed #555",
+              borderRadius: "12px",
+              backgroundColor:
+                tempSlot === null ? "#555" : "#4CAF50",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               fontSize: "26px",
               fontWeight: "bold",
-              backgroundColor: "#ffffff",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              color: "white",
+              border: "2px dashed #777",
               cursor: tempSlot !== null ? "grab" : "default",
             }}
           >
@@ -226,5 +214,4 @@ function ArrayGame() {
     </div>
   );
 }
-
 export default ArrayGame;
