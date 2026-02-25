@@ -1,14 +1,20 @@
-import ArrayGame from "./components/ArrayGame";
+import { useState } from "react";
+import SortingGame from "./components/SortingGame";
+import { sortingLevels } from "./levels/sortingLevels";
 
-function App() {
+export default function App() {
+  const [currentLevel, setCurrentLevel] = useState(0);
+
+  const handleNext = () => {
+    if (currentLevel < sortingLevels.length - 1) {
+      setCurrentLevel(prev => prev + 1);
+    }
+  };
+
   return (
-    <div>
-      <center>
-        <h1>DSA Game</h1>
-      </center>
-      <ArrayGame />
-    </div>
+    <SortingGame
+      level={sortingLevels[currentLevel]}
+      onNext={handleNext}
+    />
   );
 }
-
-export default App;
