@@ -1,109 +1,94 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-function ArrayGame() {
-  const initialArray = [5, 2, 9, 1];
-
-  const [array, setArray] = useState(initialArray);
+export default function App() {
+  const [array, setArray] = useState([5, 3, 8, 1]);
   const [tempSlot, setTempSlot] = useState(null);
-  const [dragSource, setDragSource] = useState(null);
+  const [draggedItem, setDraggedItem] = useState(null);
   const [time, setTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(true);
 
-  // TIMER
+  // ✅ Timer Effect
   useEffect(() => {
-    let interval;
-    if (isRunning) {
-      interval = setInterval(() => {
-        setTime((prev) => prev + 1);
-      }, 1000);
-    }
+    const interval = setInterval(() => {
+      setTime((prev) => prev + 1);
+    }, 1000);
+
     return () => clearInterval(interval);
-  }, [isRunning]);
+  }, []);
 
-  function handleDragStart(source) {
-    setDragSource(source);
-  }
+  const formatTime = (t) => {
+    const minutes = Math.floor(t / 60);
+    const seconds = t % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
 
-  function handleDragOver(e) {
+  const resetGame = () => {
+    setArray([5, 3, 8, 1]);
+    setTempSlot(null);
+    setTime(0);
+  };
+
+  const handleDragStart = (item) => {
+    setDraggedItem(item);
+  };
+
+  const handleDragOver = (e) => {
     e.preventDefault();
-  }
+  };
 
-  function handleDrop(target) {
-    if (!dragSource) return;
+  const handleDrop = (target) => {
+    if (!draggedItem) return;
 
-    const newArray = [...array];
-    let newTemp = tempSlot;
+    let newArray = [...array];
 
-    // From array
-    if (dragSource.type === "array") {
-      const value = array[dragSource.index];
+    // Drag from array
+    if (draggedItem.type === "array") {
+      const value = array[draggedItem.index];
 
-      if (target.type === "temp" && tempSlot === null) {
-        newTemp = value;
-        newArray[dragSource.index] = null;
+      if (target.type === "array") {
+        const temp = newArray[target.index];
+        newArray[target.index] = value;
+        newArray[draggedItem.index] = temp;
       }
 
-      if (target.type === "array" && array[target.index] === null) {
-        newArray[target.index] = value;
-        newArray[dragSource.index] = null;
+      if (target.type === "temp") {
+        setTempSlot(value);
+        newArray[draggedItem.index] = null;
       }
     }
 
-    // From temp
-    if (dragSource.type === "temp") {
-      if (target.type === "array" && array[target.index] === null) {
+    // ✅ Drag from temp (fixed swap logic)
+    if (draggedItem.type === "temp") {
+      if (target.type === "array") {
+        const targetValue = newArray[target.index];
         newArray[target.index] = tempSlot;
-        newTemp = null;
+        setTempSlot(targetValue);
       }
     }
 
     setArray(newArray);
-    setTempSlot(newTemp);
-    setDragSource(null);
-
-    checkSorted(newArray);
-  }
-
-  function checkSorted(arr) {
-    for (let i = 0; i < arr.length - 1; i++) {
-      if (arr[i] === null || arr[i + 1] === null) return;
-      if (arr[i] > arr[i + 1]) return;
-    }
-    setIsRunning(false);
-  }
-
-  function resetGame() {
-    setArray(initialArray);
-    setTempSlot(null);
-    setDragSource(null);
-    setTime(0);
-    setIsRunning(true);
-  }
-
-  function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  }
+    setDraggedItem(null);
+  };
 
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
+        width: "100vw",
         backgroundColor: "#1e1e1e",
         display: "flex",
-        flexDirection: "column",
+        justifyContent: "center",
         alignItems: "center",
         fontFamily: "Arial, sans-serif",
         color: "white",
+        position: "relative",
       }}
     >
-      {/* Top Left Controls */}
+      {/* Top Right Controls */}
       <div
         style={{
           position: "absolute",
           top: "20px",
-          left: "20px",
+          right: "20px",
           display: "flex",
           gap: "20px",
           alignItems: "center",
@@ -128,16 +113,16 @@ function ArrayGame() {
         </button>
       </div>
 
-      {/* Game Area */}
+      {/* Center Game Box */}
       <div
         style={{
-          marginTop: "120px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          gap: "60px",
         }}
       >
-        <h2 style={{ marginBottom: "40px" }}>Bubble Sort Level</h2>
+        <h2>Bubble Sort Level</h2>
 
         {/* Array */}
         <div style={{ display: "flex", gap: "15px" }}>
@@ -174,14 +159,11 @@ function ArrayGame() {
         {/* Temp Slot */}
         <div
           style={{
-            marginTop: "70px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
           }}
         >
-          <span style={{ marginBottom: "10px" }}>Temp Slot</span>
-
           <div
             draggable={tempSlot !== null}
             onDragStart={() =>
@@ -195,8 +177,7 @@ function ArrayGame() {
               width: "90px",
               height: "90px",
               borderRadius: "12px",
-              backgroundColor:
-                tempSlot === null ? "#555" : "#4CAF50",
+              backgroundColor: tempSlot === null ? "#555" : "#4CAF50",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -214,4 +195,3 @@ function ArrayGame() {
     </div>
   );
 }
-export default ArrayGame;

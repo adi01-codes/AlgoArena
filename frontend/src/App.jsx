@@ -2,8 +2,10 @@ import ArrayGame from "./components/ArrayGame";
 
 function App() {
   return (
-    <div style={{ padding: "40px" }}>
-      <h1>DSA Game</h1>
+    <div>
+      <center>
+        <h1>DSA Game</h1>
+      </center>
       <ArrayGame />
     </div>
   );
